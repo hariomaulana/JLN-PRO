@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= includeT("Partials_Head"); ?>
+  </head>
+
+  <body class="bg-slate-50 text-slate-900 min-h-screen">
+    <?!= includeT("Partials_Navbar"); ?>
+
+    <div id="root"></div>
+
+    <?!= includeT("Modals"); ?>
+    <?!= includeT("AppCore"); ?>
+
+    <!-- mountApp TIDAK perlu babel, tapi WAJIB nonce -->
+    <script nonce="<?= HtmlService.getScriptNonce() ?>">
+      (function(){
+        var p = "<?= page ?>";
+        p = (p || "customers").toLowerCase();
+        if (typeof mountApp === "function") mountApp(p);
+        else console.error("mountApp tidak ditemukan. AppCore belum termuat.");
+      })();
+    </script>
+  </body>
+</html>

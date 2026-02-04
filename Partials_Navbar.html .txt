@@ -1,0 +1,14 @@
+<nav class="sticky top-0 z-50 bg-slate-900 text-white shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center justify-between">
+    <div class="font-black tracking-tight uppercase">JLN PRO</div>
+
+    <div class="flex flex-wrap gap-2 text-[11px] font-black uppercase tracking-widest">
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Customers">Pelanggan</a>
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Locations">Lokasi/Blok</a>
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Packages">Paket</a>
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Reports">Laporan</a>
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Announcements">Pengumuman</a>
+      <a class="px-3 py-2 rounded-xl hover:bg-white/10" href="?page=Users">User</a>
+    </div>
+  </div>
+</nav>
