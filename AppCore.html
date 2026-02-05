@@ -1,23 +1,13 @@
-<script type="text/babel" nonce="<?= HtmlService.getScriptNonce() ?>">
-/* =========================================================
-   JLN PRO - AppCore (React Root App)
-   - FIX: CSP/nonce agar script inline jalan di GAS WebApp
-   - Root <div id="root"></div> harus ada di Index.html
-========================================================= */
-
+<script type="text/babel">
 const { useEffect, useMemo, useRef, useState } = React;
 
-/* =========================
-   ICON
-========================= */
+/* ========= ICON ========= */
 const Icon = ({ name, size = 18, className = "" }) => {
   useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
   return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
 };
 
-/* =========================
-   MAP PICKER (Leaflet)
-========================= */
+/* ========= MAP PICKER ========= */
 const MapPicker = ({ value, onPick }) => {
   const mapId = useMemo(() => `map_${Math.random().toString(36).slice(2)}`, []);
   const markerRef = useRef(null);
@@ -25,7 +15,6 @@ const MapPicker = ({ value, onPick }) => {
 
   useEffect(() => {
     if (!window.L) return;
-
     const defaultLatLng = [-6.200000, 106.816666];
     let initial = defaultLatLng;
 
@@ -54,10 +43,8 @@ const MapPicker = ({ value, onPick }) => {
   useEffect(() => {
     if (!window.L || !mapRef.current || !markerRef.current) return;
     if (!value || !value.includes(",")) return;
-
     const parts = value.split(",").map(v => Number(String(v).trim()));
     if (parts.length !== 2) return;
-
     const [lat, lng] = parts;
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
       markerRef.current.setLatLng([lat, lng]);
@@ -75,59 +62,29 @@ const MapPicker = ({ value, onPick }) => {
   );
 };
 
-/* =========================
-   UI ATOMS
-========================= */
+/* ========= UI ========= */
 const Card = ({ children, className="" }) => (
   <div className={`glass rounded-3xl shadow-xl border border-white/40 ${className}`}>{children}</div>
 );
 
 const Button = ({ children, className="", ...props }) => (
-  <button
-    {...props}
-    className={`px-4 py-2 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg transition-all active:scale-[0.98] ${className}`}
-  >
+  <button {...props} className={`px-4 py-2 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg transition-all active:scale-[0.98] ${className}`}>
     {children}
   </button>
 );
 
-const ModalShell = ({ open, title, subtitle, onClose, children, footer }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-slate-900/50" onClick={onClose}></div>
-      <div className="relative w-full md:max-w-4xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-slate-900 text-white shadow-xl">
-                <Icon name="layers" size={18}/>
-              </div>
-              <h3 className="text-xl font-black italic uppercase tracking-tighter">{title}</h3>
-            </div>
-            {subtitle && <p className="mt-2 text-slate-500 text-sm">{subtitle}</p>}
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-50">
-            <Icon name="x" size={22}/>
-          </button>
-        </div>
-
-        <div className="p-6 max-h-[75vh] overflow-auto">{children}</div>
-        {footer && <div className="p-5 border-t border-slate-100 bg-slate-50">{footer}</div>}
-      </div>
-    </div>
-  );
-};
-
 const Badge = ({ status }) => {
   const config = {
-    "Aktif": "bg-green-50 text-green-700 border-green-100",
-    "Antrian Pemasangan": "bg-amber-50 text-amber-700 border-amber-100",
-    "Isolir": "bg-rose-50 text-rose-700 border-rose-100",
+    'Aktif': 'bg-green-50 text-green-700 border-green-100',
+    'Antrian Pemasangan': 'bg-amber-50 text-amber-700 border-amber-100',
+    'Isolir': 'bg-rose-50 text-rose-700 border-rose-100',
+    'ADMIN': 'bg-slate-900 text-white border-slate-900',
+    'SALES': 'bg-slate-100 text-slate-800 border-slate-200',
+    'Tersedia': 'bg-emerald-50 text-emerald-700 border-emerald-100',
   };
   return (
-    <span className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${config[status] || "bg-slate-50 text-slate-600 border-slate-100"}`}>
-      {status || "-"}
+    <span className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${config[status] || 'bg-slate-50 text-slate-600 border-slate-100'}`}>
+      {status || '-'}
     </span>
   );
 };
@@ -151,17 +108,42 @@ const TabButton = ({ active, onClick, icon, children }) => (
   </button>
 );
 
-/* =========================
-   APP
-========================= */
-function App({ initialTab } = {}) {
-  const [view, setView] = useState("login");
-  const [tab, setTab] = useState(initialTab || "customers");
+const ModalShell = ({ open, title, subtitle, onClose, children, footer }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div className="absolute inset-0 bg-slate-900/50" onClick={onClose}></div>
+      <div className="relative w-full md:max-w-4xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-slate-900 text-white shadow-xl">
+                <Icon name="layers" size={18}/>
+              </div>
+              <h3 className="text-xl font-black italic uppercase tracking-tighter">{title}</h3>
+            </div>
+            {subtitle && <p className="mt-2 text-slate-500 text-sm">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-50">
+            <Icon name="x" size={22}/>
+          </button>
+        </div>
+        <div className="p-6 max-h-[75vh] overflow-auto">{children}</div>
+        {footer && <div className="p-5 border-t border-slate-100 bg-slate-50">{footer}</div>}
+      </div>
+    </div>
+  );
+};
+
+/* ========= APP ========= */
+function App({ initialTab } = {}){
+  const [view, setView] = useState('login');
+  const [tab, setTab] = useState(initialTab || 'customers');
   const [isLoading, setIsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const [user, setUser] = useState({ role: "SALES", username: "", fullName: "" });
-  const [login, setLogin] = useState({ username: "", password: "" });
+  const [user, setUser] = useState({ role: 'SALES', username: '', fullName: '' });
+  const [login, setLogin] = useState({ username: '', password: '' });
 
   const [data, setData] = useState({
     customers: [],
@@ -172,7 +154,7 @@ function App({ initialTab } = {}) {
     announcements: []
   });
 
-  const [modal, setModal] = useState({ open: false, type: "", editIndex: null });
+  const [modal, setModal] = useState({ open: false, type: '', editIndex: null });
   const [formData, setFormData] = useState({});
 
   const canAdmin = String(user.role || "").toUpperCase() === "ADMIN";
@@ -193,7 +175,7 @@ function App({ initialTab } = {}) {
   };
 
   useEffect(() => {
-    if (view === "dashboard" && user.username) fetchAll();
+    if (view === 'dashboard' && user.username) fetchAll();
   }, [view, user.username]);
 
   const doLogin = (e) => {
@@ -204,8 +186,7 @@ function App({ initialTab } = {}) {
         setIsLoading(false);
         if (!res || !res.ok) return alert(res?.message || "Gagal login.");
         setUser(res.user);
-        setView("dashboard");
-        setTab("customers");
+        setView('dashboard');
       })
       .withFailureHandler((err) => {
         console.error(err);
@@ -222,8 +203,7 @@ function App({ initialTab } = {}) {
         setIsLoading(false);
         if (!res || !res.ok) return alert(res?.message || "Gagal login Google.");
         setUser(res.user);
-        setView("dashboard");
-        setTab("customers");
+        setView('dashboard');
       })
       .withFailureHandler((err) => {
         console.error(err);
@@ -266,23 +246,22 @@ function App({ initialTab } = {}) {
       return;
     }
 
-    setModal({ open: true, type, editIndex: item?.ROW_INDEX || null });
+    setModal({ open:true, type, editIndex: item?.ROW_INDEX || null });
 
-    if (type === "customer") {
+    if (type === 'customer') {
       setFormData(item || {
-        ID_PELANGGAN: "JLN-" + Math.floor(1000 + Math.random() * 9000),
-        NAMA: "",
-        ALAMAT: "",
-        LOKASI: "",
-        PAKET: "",
-        WHATSAPP: "",
-        KOORDINAT: "",
-        URL_KTP: "",
-        URL_FOTO_RUMAH: "",
+        ID_PELANGGAN: 'JLN-'+Math.floor(1000+Math.random()*9000),
+        NAMA: '',
+        ALAMAT: '',
+        LOKASI: '',
+        PAKET: '',
+        WHATSAPP: '',
+        KOORDINAT: '',
+        URL_KTP: '',
+        URL_FOTO_RUMAH: '',
         __SHOW_MAP: false,
-        TGL_DAFTAR: new Date().toISOString().split("T")[0],
-        TGL_PASANG: "",
-        STATUS: canAdmin ? "Aktif" : "Antrian Pemasangan",
+        TGL_DAFTAR: new Date().toISOString().split('T')[0],
+        STATUS: canAdmin ? 'Aktif' : 'Antrian Pemasangan',
         SALES_REKRUTER: user.username
       });
       return;
@@ -300,7 +279,6 @@ function App({ initialTab } = {}) {
     if (type === "report") {
       setFormData(item || {
         DATE: new Date().toISOString().split("T")[0],
-        TANGGAL_LAPORAN: new Date().toISOString().split("T")[0],
         SALES_USERNAME: user.username,
         ID_PELANGGAN: "",
         NAMA: "",
@@ -316,12 +294,12 @@ function App({ initialTab } = {}) {
   };
 
   const closeModal = () => {
-    setModal({ open: false, type: "", editIndex: null });
+    setModal({ open:false, type:'', editIndex:null });
     setFormData({});
     setUploading(false);
   };
 
-  const handleFileUpload = async (e, field, docType) => {
+  const handleFileUpload = (e, field, docType) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
@@ -357,7 +335,7 @@ function App({ initialTab } = {}) {
     e.preventDefault();
     if (uploading) return alert("Proses upload sedang berjalan. Tunggu sampai selesai.");
 
-    if (modal.type === "customer") {
+    if (modal.type === 'customer') {
       const fd = { ...(formData || {}) };
       if (!fd.NAMA || !fd.ALAMAT || !fd.LOKASI || !fd.PAKET) return alert("Lengkapi: NAMA, ALAMAT, LOKASI, dan PAKET.");
       if (!fd.WHATSAPP || !isValidWhatsApp(fd.WHATSAPP)) return alert("Nomor WhatsApp belum valid. Disarankan format +62xxxxxxxxxxx.");
@@ -372,9 +350,9 @@ function App({ initialTab } = {}) {
       setFormData(fd);
     }
 
-    if (modal.type === "location") if (!formData.NAME) return alert("Nama lokasi/blok wajib diisi.");
-    if (modal.type === "package") if (!formData.NAME) return alert("Nama paket wajib diisi.");
-    if (modal.type === "announcement") if (!formData.TITLE || !formData.CONTENT) return alert("Judul & isi pengumuman wajib diisi.");
+    if (modal.type === "location" && !formData.NAME) return alert("Nama lokasi/blok wajib diisi.");
+    if (modal.type === "package" && !formData.NAME) return alert("Nama paket wajib diisi.");
+    if (modal.type === "announcement" && (!formData.TITLE || !formData.CONTENT)) return alert("Judul & isi pengumuman wajib diisi.");
 
     if (modal.type === "user") {
       if (!formData.USERNAME) return alert("USERNAME wajib diisi.");
@@ -400,11 +378,11 @@ function App({ initialTab } = {}) {
     }
 
     const map = {
-      customer: "Customers",
-      package: "Packages",
-      user: "Users",
-      location: "Locations",
-      announcement: "Announcements"
+      customer: 'Customers',
+      package: 'Packages',
+      user: 'Users',
+      location: 'Locations',
+      announcement: 'Announcements'
     };
 
     google.script.run
@@ -454,12 +432,9 @@ function App({ initialTab } = {}) {
     </Card>
   );
 
-  /* =========================
-     VIEW: LOGIN
-  ========================= */
-  if (view === "login") {
+  if (view === 'login') {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-6">
+      <div className="min-h-[70vh] flex items-center justify-center p-6">
         <Card className="w-full max-w-lg p-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-slate-900 p-3 rounded-2xl text-white shadow-xl"><Icon name="sparkles" size={22}/></div>
@@ -475,19 +450,18 @@ function App({ initialTab } = {}) {
               <input
                 value={login.username}
                 onChange={e=>setLogin({...login, username:e.target.value})}
-                className="w-full p-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-600/10"
+                className="w-full p-4 rounded-2xl border border-slate-200 bg-white outline-none"
                 placeholder="username..."
                 required
               />
             </div>
-
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-3">Password</label>
               <input
                 type="password"
                 value={login.password}
                 onChange={e=>setLogin({...login, password:e.target.value})}
-                className="w-full p-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-600/10"
+                className="w-full p-4 rounded-2xl border border-slate-200 bg-white outline-none"
                 placeholder="password..."
                 required
               />
@@ -508,11 +482,8 @@ function App({ initialTab } = {}) {
     );
   }
 
-  /* =========================
-     VIEW: DASHBOARD
-  ========================= */
   return (
-    <div className="space-y-6">
+    <div className="max-w-6xl mx-auto px-6 pb-10 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="bg-slate-900 p-3 rounded-2xl text-white shadow-xl"><Icon name="layout-dashboard" size={22}/></div>
@@ -526,7 +497,7 @@ function App({ initialTab } = {}) {
           <Button onClick={fetchAll} className="bg-white border border-slate-200 text-slate-900 hover:bg-slate-50 shadow-sm">
             <span className="inline-flex items-center gap-2"><Icon name="refresh-cw" size={16}/>Refresh</span>
           </Button>
-          <Button onClick={()=>{ setUser({role:"SALES", username:"", fullName:""}); setView("login"); }} className="bg-slate-900 text-white hover:bg-slate-800">
+          <Button onClick={()=>{ setUser({role:'SALES', username:'', fullName:''}); setView('login'); }} className="bg-slate-900 text-white hover:bg-slate-800">
             Logout
           </Button>
         </div>
@@ -534,12 +505,12 @@ function App({ initialTab } = {}) {
 
       {/* MENU */}
       <div className="flex flex-wrap gap-2">
-        <TabButton active={tab==="customers"} onClick={()=>setTab("customers")} icon="users">Pelanggan</TabButton>
-        <TabButton active={tab==="locations"} onClick={()=>setTab("locations")} icon="map-pin">Lokasi/Blok</TabButton>
-        <TabButton active={tab==="packages"} onClick={()=>setTab("packages")} icon="package">Paket</TabButton>
-        <TabButton active={tab==="reports"} onClick={()=>setTab("reports")} icon="file-text">Laporan</TabButton>
-        <TabButton active={tab==="announcements"} onClick={()=>setTab("announcements")} icon="megaphone">Pengumuman</TabButton>
-        {canAdmin && <TabButton active={tab==="users"} onClick={()=>setTab("users")} icon="shield">User</TabButton>}
+        <TabButton active={tab==='customers'} onClick={()=>setTab('customers')} icon="users">Pelanggan</TabButton>
+        <TabButton active={tab==='locations'} onClick={()=>setTab('locations')} icon="map-pin">Lokasi/Blok</TabButton>
+        <TabButton active={tab==='packages'} onClick={()=>setTab('packages')} icon="package">Paket</TabButton>
+        <TabButton active={tab==='reports'} onClick={()=>setTab('reports')} icon="file-text">Laporan</TabButton>
+        <TabButton active={tab==='announcements'} onClick={()=>setTab('announcements')} icon="megaphone">Pengumuman</TabButton>
+        {canAdmin && <TabButton active={tab==='users'} onClick={()=>setTab('users')} icon="shield">User</TabButton>}
       </div>
 
       {/* TAB: PELANGGAN */}
@@ -547,7 +518,7 @@ function App({ initialTab } = {}) {
         <TableShell
           title="Data Pelanggan"
           right={
-            <Button onClick={()=>openModal("customer")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('customer')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="user-plus" size={16}/>Tambah</span>
             </Button>
           }
@@ -573,11 +544,11 @@ function App({ initialTab } = {}) {
                   <td className="py-3"><Badge status={c.STATUS}/></td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button onClick={()=>openModal("customer", c)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>openModal('customer', c)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
                         Edit
                       </button>
                       {canAdmin && (
-                        <button onClick={()=>handleDelete("Customers", c.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
+                        <button onClick={()=>handleDelete('Customers', c.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
                           Hapus
                         </button>
                       )}
@@ -593,12 +564,12 @@ function App({ initialTab } = {}) {
         </TableShell>
       )}
 
-      {/* TAB: LOKASI / BLOK */}
+      {/* TAB: LOKASI */}
       {tab === "locations" && (
         <TableShell
           title="Daftar Lokasi / Blok"
           right={
-            <Button onClick={()=>openModal("location")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('location')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="plus" size={16}/>Tambah</span>
             </Button>
           }
@@ -616,10 +587,10 @@ function App({ initialTab } = {}) {
                   <td className="py-3 font-semibold">{l.NAME}</td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button onClick={()=>openModal("location", l)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>openModal('location', l)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
                         Edit
                       </button>
-                      <button onClick={()=>handleDelete("Locations", l.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>handleDelete('Locations', l.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
                         Hapus
                       </button>
                     </div>
@@ -639,7 +610,7 @@ function App({ initialTab } = {}) {
         <TableShell
           title="Daftar Paket"
           right={
-            <Button onClick={()=>openModal("package")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('package')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="plus" size={16}/>Tambah</span>
             </Button>
           }
@@ -663,10 +634,10 @@ function App({ initialTab } = {}) {
                   <td className="py-3"><Badge status={p.IS_AVAILABLE}/></td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button onClick={()=>openModal("package", p)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>openModal('package', p)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
                         Edit
                       </button>
-                      <button onClick={()=>handleDelete("Packages", p.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>handleDelete('Packages', p.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
                         Hapus
                       </button>
                     </div>
@@ -686,7 +657,7 @@ function App({ initialTab } = {}) {
         <TableShell
           title="Laporan"
           right={
-            <Button onClick={()=>openModal("report")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('report')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="plus" size={16}/>Buat Laporan</span>
             </Button>
           }
@@ -716,7 +687,7 @@ function App({ initialTab } = {}) {
                   <td className="py-3">
                     <div className="flex gap-2 flex-wrap">
                       <button
-                        onClick={()=>openModal("report", r)}
+                        onClick={()=>openModal('report', r)}
                         className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest"
                       >
                         Detail/Edit
@@ -733,7 +704,7 @@ function App({ initialTab } = {}) {
 
                       {canAdmin && (
                         <button
-                          onClick={()=>handleDelete("Reports", r.ROW_INDEX)}
+                          onClick={()=>handleDelete('Reports', r.ROW_INDEX)}
                           className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest"
                         >
                           Hapus
@@ -756,7 +727,7 @@ function App({ initialTab } = {}) {
         <TableShell
           title="Pengumuman"
           right={
-            <Button onClick={()=>openModal("announcement")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('announcement')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="plus" size={16}/>Tambah</span>
             </Button>
           }
@@ -775,15 +746,13 @@ function App({ initialTab } = {}) {
                 <tr key={idx} className="border-t border-slate-100">
                   <td className="py-3">{a.DATE}</td>
                   <td className="py-3 font-semibold">{a.TITLE}</td>
-                  <td className="py-3 text-slate-600">
-                    {String(a.CONTENT || "").slice(0, 80)}{String(a.CONTENT || "").length > 80 ? "..." : ""}
-                  </td>
+                  <td className="py-3 text-slate-600">{String(a.CONTENT || "").slice(0, 80)}{String(a.CONTENT || "").length>80 ? "..." : ""}</td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button onClick={()=>openModal("announcement", a)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>openModal('announcement', a)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
                         Edit
                       </button>
-                      <button onClick={()=>handleDelete("Announcements", a.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>handleDelete('Announcements', a.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
                         Hapus
                       </button>
                     </div>
@@ -803,7 +772,7 @@ function App({ initialTab } = {}) {
         <TableShell
           title="Manajemen User"
           right={
-            <Button onClick={()=>openModal("user")} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={()=>openModal('user')} className="bg-blue-600 text-white hover:bg-blue-700">
               <span className="inline-flex items-center gap-2"><Icon name="plus" size={16}/>Tambah</span>
             </Button>
           }
@@ -827,10 +796,10 @@ function App({ initialTab } = {}) {
                   <td className="py-3 text-slate-600">{u.EMAIL_GOOGLE}</td>
                   <td className="py-3">
                     <div className="flex gap-2">
-                      <button onClick={()=>openModal("user", u)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>openModal('user', u)} className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-black text-[10px] uppercase tracking-widest">
                         Edit
                       </button>
-                      <button onClick={()=>handleDelete("Users", u.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
+                      <button onClick={()=>handleDelete('Users', u.ROW_INDEX)} className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-black text-[10px] uppercase tracking-widest">
                         Hapus
                       </button>
                     </div>
@@ -845,26 +814,26 @@ function App({ initialTab } = {}) {
         </TableShell>
       )}
 
-      {/* MODAL (SEMUA FORM) */}
+      {/* MODAL */}
       <ModalShell
         open={modal.open}
         title={
-          modal.type === "customer" ? (modal.editIndex ? "Edit Pelanggan" : "Pendaftaran Pelanggan Baru") :
-          modal.type === "location" ? (modal.editIndex ? "Edit Lokasi/Blok" : "Tambah Lokasi/Blok") :
-          modal.type === "package" ? (modal.editIndex ? "Edit Paket" : "Tambah Paket") :
-          modal.type === "user" ? (modal.editIndex ? "Edit User" : "Tambah User") :
-          modal.type === "announcement" ? (modal.editIndex ? "Edit Pengumuman" : "Tambah Pengumuman") :
-          modal.type === "report" ? (modal.editIndex ? "Edit Laporan" : "Buat Laporan") :
-          "Form"
+          modal.type === 'customer' ? (modal.editIndex ? 'Edit Pelanggan' : 'Pendaftaran Pelanggan Baru') :
+          modal.type === 'location' ? (modal.editIndex ? 'Edit Lokasi/Blok' : 'Tambah Lokasi/Blok') :
+          modal.type === 'package' ? (modal.editIndex ? 'Edit Paket' : 'Tambah Paket') :
+          modal.type === 'user' ? (modal.editIndex ? 'Edit User' : 'Tambah User') :
+          modal.type === 'announcement' ? (modal.editIndex ? 'Edit Pengumuman' : 'Tambah Pengumuman') :
+          modal.type === 'report' ? (modal.editIndex ? 'Edit Laporan' : 'Buat Laporan') :
+          'Form'
         }
         subtitle={
-          modal.type === "customer" ? "Lengkapi data, pilih koordinat dari peta, dan upload berkas." :
-          modal.type === "location" ? "Master data untuk dropdown Lokasi/Blok." :
-          modal.type === "package" ? "Master data untuk dropdown Paket." :
-          modal.type === "user" ? "Manajemen akun login." :
-          modal.type === "announcement" ? "Pengumuman tampil di tab Pengumuman." :
-          modal.type === "report" ? (canAdmin ? "Admin bisa verifikasi. Setelah verifikasi, sales terkunci." : "Laporan bisa diedit sebelum verifikasi Admin.") :
-          ""
+          modal.type === 'customer' ? 'Lengkapi data, pilih koordinat dari peta, dan upload berkas.' :
+          modal.type === 'location' ? 'Master data untuk dropdown Lokasi/Blok.' :
+          modal.type === 'package' ? 'Master data untuk dropdown Paket.' :
+          modal.type === 'user' ? 'Manajemen akun login.' :
+          modal.type === 'announcement' ? 'Pengumuman tampil di tab Pengumuman.' :
+          modal.type === 'report' ? (canAdmin ? 'Admin bisa verifikasi. Setelah verifikasi, sales terkunci.' : 'Laporan bisa diedit sebelum verifikasi Admin.') :
+          ''
         }
         onClose={closeModal}
         footer={
@@ -877,40 +846,247 @@ function App({ initialTab } = {}) {
         }
       >
         <form id="modalForm" onSubmit={handleSave} className="space-y-6">
-          {/* komponen modal ada di Modals.html */}
-          <ModalCustomerFields
-            modal={modal}
-            formData={formData}
-            setFormData={setFormData}
-            data={data}
-            isValidWhatsApp={isValidWhatsApp}
-            gmapsLinkFromCoord={gmapsLinkFromCoord}
-            handleFileUpload={handleFileUpload}
-            uploading={uploading}
-            canAdmin={canAdmin}
-            MapPicker={MapPicker}
-          />
-          <ModalLocationFields modal={modal} formData={formData} setFormData={setFormData} data={data} />
-          <ModalPackageFields modal={modal} formData={formData} setFormData={setFormData} data={data} />
-          <ModalAnnouncementFields modal={modal} formData={formData} setFormData={setFormData} data={data} />
-          <ModalUserFields modal={modal} formData={formData} setFormData={setFormData} data={data} />
-          <ModalReportFields modal={modal} formData={formData} setFormData={setFormData} data={data} canAdmin={canAdmin} />
+          {modal.type === "location" && (
+            <div className="space-y-2">
+              <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Nama Lokasi/Blok</label>
+              <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                value={formData.NAME || ""} onChange={e=>setFormData({...formData, NAME:e.target.value})} placeholder="Contoh: Blok A" />
+            </div>
+          )}
+
+          {modal.type === "package" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Nama Paket</label>
+                <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.NAME || ""} onChange={e=>setFormData({...formData, NAME:e.target.value})} placeholder="Paket 10 Mbps" />
+              </div>
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Harga</label>
+                <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.PRICE || ""} onChange={e=>setFormData({...formData, PRICE:e.target.value})} placeholder="150000" />
+              </div>
+            </div>
+          )}
+
+          {modal.type === "announcement" && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Judul</label>
+                <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.TITLE || ""} onChange={e=>setFormData({...formData, TITLE:e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Isi</label>
+                <textarea className="w-full p-4 rounded-2xl border border-slate-200 bg-white min-h-[120px]"
+                  value={formData.CONTENT || ""} onChange={e=>setFormData({...formData, CONTENT:e.target.value})} />
+              </div>
+            </div>
+          )}
+
+          {modal.type === "user" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Username</label>
+                <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.USERNAME || ""} onChange={e=>setFormData({...formData, USERNAME:e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Password</label>
+                <input type="password" className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.PASSWORD || ""} onChange={e=>setFormData({...formData, PASSWORD:e.target.value})} placeholder={modal.editIndex ? "(kosongkan jika tidak ganti)" : ""} />
+              </div>
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Role</label>
+                <select className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.ROLE || "SALES"} onChange={e=>setFormData({...formData, ROLE:e.target.value})}>
+                  <option value="SALES">SALES</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Email Google</label>
+                <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                  value={formData.EMAIL_GOOGLE || ""} onChange={e=>setFormData({...formData, EMAIL_GOOGLE:e.target.value})} placeholder="nama@gmail.com" />
+              </div>
+            </div>
+          )}
+
+          {modal.type === "report" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Tanggal</label>
+                  <input type="date" className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                    value={formData.DATE || ""} onChange={e=>setFormData({...formData, DATE:e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Pelanggan</label>
+                  <select className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                    value={formData.ID_PELANGGAN || ""} onChange={e=>{
+                      const id = e.target.value;
+                      const c = (data.customers||[]).find(x=>String(x.ID_PELANGGAN)===String(id));
+                      setFormData({...formData, ID_PELANGGAN:id, NAMA: c ? c.NAMA : ""});
+                    }}>
+                    <option value="">Pilih pelanggan...</option>
+                    {(data.customers||[]).map((c, idx)=>(
+                      <option key={idx} value={c.ID_PELANGGAN}>{c.ID_PELANGGAN} - {c.NAMA}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Status</label>
+                  <select className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                    value={formData.STATUS || ""} onChange={e=>setFormData({...formData, STATUS:e.target.value})}>
+                    <option value="Antrian Pemasangan">Antrian Pemasangan</option>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Isolir">Isolir</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Catatan</label>
+                  <input className="w-full p-4 rounded-2xl border border-slate-200 bg-white"
+                    value={formData.CATATAN || ""} onChange={e=>setFormData({...formData, CATATAN:e.target.value})} placeholder="Catatan lapangan..." />
+                </div>
+              </div>
+
+              {formData.VERIFIED_AT && (
+                <div className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-800 text-sm">
+                  Laporan sudah diverifikasi: <b>{String(formData.VERIFIED_AT)}</b>
+                </div>
+              )}
+            </div>
+          )}
+
+          {modal.type === "customer" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">ID Pelanggan</label>
+                  <input value={formData.ID_PELANGGAN || ""} disabled
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-slate-50 font-black" />
+                </div>
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Nama</label>
+                  <input value={formData.NAMA || ""} onChange={e=>setFormData({...formData, NAMA:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white" required />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Alamat</label>
+                  <textarea value={formData.ALAMAT || ""} onChange={e=>setFormData({...formData, ALAMAT:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white min-h-[90px]" required />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Lokasi / Blok</label>
+                  <select value={formData.LOKASI || ""} onChange={e=>setFormData({...formData, LOKASI:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white" required >
+                    <option value="">Pilih lokasi...</option>
+                    {(data.locations || []).map((l, idx)=>(
+                      <option key={idx} value={l.NAME}>{l.NAME}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Paket</label>
+                  <select value={formData.PAKET || ""} onChange={e=>setFormData({...formData, PAKET:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white" required >
+                    <option value="">Pilih paket...</option>
+                    {(data.packages || []).map((p, idx)=>(
+                      <option key={idx} value={p.NAME}>{p.NAME}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Nomor WhatsApp</label>
+                  <input value={formData.WHATSAPP || ""} onChange={e=>setFormData({...formData, WHATSAPP:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white" placeholder="+62xxxxxxxxxxx" required />
+                  <div className={`text-[10px] font-black uppercase tracking-widest ml-3 ${isValidWhatsApp(formData.WHATSAPP) ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {isValidWhatsApp(formData.WHATSAPP) ? 'Format OK' : 'Disarankan format +62xxxx'}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="ml-3 block opacity-60 text-[10px] font-black uppercase tracking-widest">Koordinat</label>
+                  <input value={formData.KOORDINAT || ""} onChange={e=>setFormData({...formData, KOORDINAT:e.target.value})}
+                    className="w-full p-4 rounded-2xl border border-slate-200 bg-white" placeholder="-6.123456, 106.123456" required />
+                  <div className="flex items-center gap-2 ml-3">
+                    <button type="button" onClick={()=>setFormData({...formData, __SHOW_MAP: !formData.__SHOW_MAP})}
+                      className="text-blue-600 font-black text-[10px] uppercase tracking-widest hover:underline">
+                      {formData.__SHOW_MAP ? 'Tutup Map' : 'Buka Map'}
+                    </button>
+                    {gmapsLinkFromCoord(formData.KOORDINAT) && (
+                      <a href={gmapsLinkFromCoord(formData.KOORDINAT)} target="_blank"
+                        className="text-slate-600 font-black text-[10px] uppercase tracking-widest hover:underline">
+                        Buka Google Maps
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  {formData.__SHOW_MAP && (
+                    <MapPicker value={formData.KOORDINAT || ""} onPick={(coord)=>setFormData({...formData, KOORDINAT: coord})} />
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Upload Berkas</div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+                    <div className="font-black uppercase tracking-widest text-[10px]">Foto KTP / SIM</div>
+                    <input type="file" accept="image/*" onChange={(e)=>handleFileUpload(e, "URL_KTP", "KTP")} className="w-full" />
+                    {formData.URL_KTP && (
+                      <a href={formData.URL_KTP} target="_blank" className="text-blue-600 text-sm font-bold hover:underline">Lihat File</a>
+                    )}
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-2">
+                    <div className="font-black uppercase tracking-widest text-[10px]">Foto Rumah (Tampak dari Jalan)</div>
+                    <input type="file" accept="image/*" onChange={(e)=>handleFileUpload(e, "URL_FOTO_RUMAH", "RUMAH")} className="w-full" />
+                    {formData.URL_FOTO_RUMAH && (
+                      <a href={formData.URL_FOTO_RUMAH} target="_blank" className="text-blue-600 text-sm font-bold hover:underline">Lihat File</a>
+                    )}
+                  </div>
+
+                  {uploading && <div className="text-[10px] font-black uppercase tracking-widest text-amber-600">Uploading...</div>}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Info Tambahan</div>
+                    <div className="mt-3 space-y-2 text-sm text-slate-700">
+                      <div><b>Status</b>: {formData.STATUS || "-"}</div>
+                      <div><b>Sales Rekruter</b>: {formData.SALES_REKRUTER || "-"}</div>
+                      <div><b>Tgl Daftar</b>: {formData.TGL_DAFTAR || "-"}</div>
+                    </div>
+                  </div>
+
+                  {!modal.editIndex && (
+                    <div className="p-4 rounded-2xl border border-amber-100 bg-amber-50 text-amber-800 text-sm">
+                      Untuk pendaftaran baru: <b>Foto KTP/SIM</b> dan <b>Foto Rumah</b> wajib diupload.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </ModalShell>
     </div>
   );
 }
 
-/* =========================
-   POLA A: mountApp
-========================= */
-function mountApp(initialTab) {
-  const rootEl = document.getElementById("root");
-  if (!rootEl) {
-    console.error("Root element #root tidak ditemukan. Pastikan ada di Index.html");
-    return;
-  }
-  ReactDOM.createRoot(rootEl).render(<App initialTab={initialTab} />);
+/* ========= mount ========= */
+function mountApp(initialTab){
+  ReactDOM.createRoot(document.getElementById('root')).render(<App initialTab={initialTab}/>);
 }
 </script>
-
