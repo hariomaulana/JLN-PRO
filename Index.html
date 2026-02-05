@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <?!= includeT("Partials_Head"); ?>
+    <?!= include("Partials_Head"); ?>
   </head>
-  <body>
-    <?!= includeT("Partials_Navbar"); ?>
+  <body class="bg-slate-50">
+    <?!= include("Partials_Navbar"); ?>
 
     <div class="max-w-6xl mx-auto p-6">
       <div id="root"></div>
     </div>
 
-    <?!= includeT("Modals"); ?>
-    <?!= includeT("AppCore"); ?>
-
+    <!-- kirim tab awal ke AppCore -->
     <script>
-      // page dari query ?page=customers dll
-      mountApp(("<?= page ?>" || "customers").toLowerCase());
+      window.__INITIAL_TAB__ = ("<?= page ?>" || "customers").toLowerCase();
     </script>
+
+    <?!= include("Modals"); ?>
+    <?!= include("AppCore"); ?>
   </body>
 </html>
