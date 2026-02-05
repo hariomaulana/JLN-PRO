@@ -1,26 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
     <?!= includeT("Partials_Head"); ?>
   </head>
-
-  <body class="bg-slate-50 text-slate-900 min-h-screen">
+  <body>
     <?!= includeT("Partials_Navbar"); ?>
 
-    <div id="root"></div>
+    <div class="max-w-6xl mx-auto p-6">
+      <div id="root"></div>
+    </div>
 
     <?!= includeT("Modals"); ?>
     <?!= includeT("AppCore"); ?>
 
-    <!-- mountApp TIDAK perlu babel, tapi WAJIB nonce -->
-    <script nonce="<?= HtmlService.getScriptNonce() ?>">
-      (function(){
-        var p = "<?= page ?>";
-        p = (p || "customers").toLowerCase();
-        if (typeof mountApp === "function") mountApp(p);
-        else console.error("mountApp tidak ditemukan. AppCore belum termuat.");
-      })();
+    <script>
+      // page dari query ?page=customers dll
+      mountApp(("<?= page ?>" || "customers").toLowerCase());
     </script>
   </body>
 </html>
