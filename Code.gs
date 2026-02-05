@@ -1,5 +1,5 @@
 /**
- * JLN PRO - POLA A (React SPA)
+ * JLN PRO - Single Source
  * Files: Index.html, Partials_Head.html, Partials_Navbar.html, Modals.html, AppCore.html
  */
 
@@ -13,34 +13,31 @@ const CONFIG = {
     REPORTS: "Reports",
     ANNOUNCEMENTS: "Announcements",
   },
+  // Sheets yang hanya boleh ADMIN CRUD
+  ADMIN_ONLY_SHEETS: ["Packages", "Locations", "Users", "Announcements"]
 };
 
 function doGet(e) {
   const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : "customers";
-
   const t = HtmlService.createTemplateFromFile("Index");
   t.page = page;
 
-  // Native sandbox biar inline script + Babel aman
   return t.evaluate()
-    .setTitle("JLN PRO - Management System")
+    .setTitle("JLN PRO")
     .setSandboxMode(HtmlService.SandboxMode.NATIVE)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
-function includeT(filename) {
-  return HtmlService.createTemplateFromFile(filename).evaluate().getContent();
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 /* =========================
    AUTH
 ========================= */
 function loginUser(username, password) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(CONFIG.SHEETS.USERS);
-  if (!sh) return { ok: false, message: "Sheet Users tidak ditemukan." };
-
+  const sh = _sheet_(CONFIG.SHEETS.USERS);
   const values = sh.getDataRange().getValues();
   const header = values.shift().map(h => String(h).trim());
   const idx = (name) => header.indexOf(name);
@@ -59,11 +56,7 @@ function loginUser(username, password) {
     if (String(row[iUser]).trim() === u && String(row[iPass]).trim() === p) {
       return {
         ok: true,
-        user: {
-          username: u,
-          role: String(row[iRole] || "SALES").toUpperCase(),
-          fullName: String(row[iName] || ""),
-        },
+        user: { username: u, role: String(row[iRole] || "SALES").toUpperCase(), fullName: String(row[iName] || "") }
       };
     }
   }
@@ -72,12 +65,9 @@ function loginUser(username, password) {
 
 function loginWithGoogle() {
   const email = Session.getActiveUser().getEmail();
-  if (!email) return { ok: false, message: "Tidak bisa mengambil email Google (izin/domain)." };
+  if (!email) return { ok: false, message: "Tidak bisa mengambil email Google." };
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(CONFIG.SHEETS.USERS);
-  if (!sh) return { ok: false, message: "Sheet Users tidak ditemukan." };
-
+  const sh = _sheet_(CONFIG.SHEETS.USERS);
   const values = sh.getDataRange().getValues();
   const header = values.shift().map(h => String(h).trim());
   const idx = (name) => header.indexOf(name);
@@ -92,11 +82,7 @@ function loginWithGoogle() {
     if (String(row[iEmail] || "").trim().toLowerCase() === String(email).trim().toLowerCase()) {
       return {
         ok: true,
-        user: {
-          username: String(row[iUser] || email),
-          role: String(row[iRole] || "SALES").toUpperCase(),
-          fullName: String(row[iName] || ""),
-        },
+        user: { username: String(row[iUser] || email), role: String(row[iRole] || "SALES").toUpperCase(), fullName: String(row[iName] || "") }
       };
     }
   }
@@ -104,7 +90,7 @@ function loginWithGoogle() {
 }
 
 /* =========================
-   DATA
+   DATA CORE
 ========================= */
 function _sheet_(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -136,13 +122,13 @@ function getGlobalData(role, username) {
   const customers = _getAll_(CONFIG.SHEETS.CUSTOMERS);
   const packages = _getAll_(CONFIG.SHEETS.PACKAGES);
   const locations = _getAll_(CONFIG.SHEETS.LOCATIONS);
-  const users = isAdmin ? _getAll_(CONFIG.SHEETS.USERS) : [];
   const announcements = _getAll_(CONFIG.SHEETS.ANNOUNCEMENTS);
 
+  let users = [];
+  if (isAdmin) users = _getAll_(CONFIG.SHEETS.USERS);
+
   let reports = _getAll_(CONFIG.SHEETS.REPORTS);
-  if (!isAdmin) {
-    reports = reports.filter(x => String(x.SALES_USERNAME || "").trim() === String(username || "").trim());
-  }
+  if (!isAdmin) reports = reports.filter(x => String(x.SALES_USERNAME || "").trim() === String(username || "").trim());
 
   return { customers, packages, locations, users, reports, announcements };
 }
@@ -160,13 +146,44 @@ function saveData(sheetName, dataObj, rowIndex) {
 }
 
 function deleteRow(sheetName, rowIndex) {
-  const sh = _sheet_(sheetName);
-  sh.deleteRow(Number(rowIndex));
+  _sheet_(sheetName).deleteRow(Number(rowIndex));
   return true;
 }
 
 /* =========================
-   REPORTS (sales bisa edit sebelum verified)
+   SECURE WRAPPERS (role checks)
+========================= */
+function _assertAdmin_(role) {
+  if (String(role || "").toUpperCase() !== "ADMIN") throw new Error("Akses ditolak: hanya ADMIN.");
+}
+
+function saveDataSecure(sheetName, dataObj, rowIndex, role, username) {
+  const isAdmin = String(role || "").toUpperCase() === "ADMIN";
+
+  // Admin-only sheets
+  if (CONFIG.ADMIN_ONLY_SHEETS.includes(String(sheetName))) _assertAdmin_(role);
+
+  // Customers: Sales boleh add/edit, tapi delete via deleteRowSecure
+  if (String(sheetName) === CONFIG.SHEETS.CUSTOMERS) {
+    // kalau sales mengedit customer: boleh (biar fleksibel)
+    // kalau mau dibatasi lebih ketat nanti kita kunci berdasarkan SALES_REKRUTER
+  }
+
+  return saveData(sheetName, dataObj, rowIndex);
+}
+
+function deleteRowSecure(sheetName, rowIndex, role) {
+  // Hapus master data & users: admin only
+  if (CONFIG.ADMIN_ONLY_SHEETS.includes(String(sheetName))) _assertAdmin_(role);
+
+  // Hapus customer: admin only
+  if (String(sheetName) === CONFIG.SHEETS.CUSTOMERS) _assertAdmin_(role);
+
+  return deleteRow(sheetName, rowIndex);
+}
+
+/* =========================
+   REPORTS (sales terkunci setelah verified)
 ========================= */
 function saveReport(formData, rowIndex, role, username) {
   const r = String(role || "").toUpperCase();
@@ -177,6 +194,7 @@ function saveReport(formData, rowIndex, role, username) {
     const values = sh.getDataRange().getValues();
     const header = values[0].map(h => String(h).trim());
     const idx = (name) => header.indexOf(name);
+
     const iVerifiedAt = idx("VERIFIED_AT");
     const iSales = idx("SALES_USERNAME");
 
@@ -189,11 +207,13 @@ function saveReport(formData, rowIndex, role, username) {
 }
 
 function deleteReport(rowIndex, role) {
-  if (String(role || "").toUpperCase() !== "ADMIN") throw new Error("Hanya ADMIN yang boleh hapus laporan.");
+  _assertAdmin_(role);
   return deleteRow(CONFIG.SHEETS.REPORTS, rowIndex);
 }
 
-function verifyReport(rowIndex, adminUsername) {
+function verifyReport(rowIndex, adminUsername, role) {
+  _assertAdmin_(role);
+
   const sh = _sheet_(CONFIG.SHEETS.REPORTS);
   const values = sh.getDataRange().getValues();
   const header = values[0].map(h => String(h).trim());
@@ -201,20 +221,20 @@ function verifyReport(rowIndex, adminUsername) {
 
   const iVerifiedBy = idx("VERIFIED_BY");
   const iVerifiedAt = idx("VERIFIED_AT");
-  if (iVerifiedBy < 0 || iVerifiedAt < 0) throw new Error("Kolom VERIFIED_BY / VERIFIED_AT tidak ada di sheet Reports.");
+  if (iVerifiedBy < 0 || iVerifiedAt < 0) throw new Error("Kolom VERIFIED_BY / VERIFIED_AT tidak ada.");
 
-  const now = new Date();
+  const now = new Date().toISOString();
   sh.getRange(Number(rowIndex), iVerifiedBy + 1).setValue(String(adminUsername || ""));
-  sh.getRange(Number(rowIndex), iVerifiedAt + 1).setValue(now.toISOString());
+  sh.getRange(Number(rowIndex), iVerifiedAt + 1).setValue(now);
   return true;
 }
 
 /* =========================
-   UPLOAD TO DRIVE
+   UPLOAD DRIVE
 ========================= */
 function uploadFileToDrive(base64Data, filename, customerId, docType) {
   const folder = _getOrCreateFolder_(CONFIG.ROOT_UPLOAD_FOLDER);
-  const sub = _getOrCreateFolder_(customerId, folder);
+  const sub = _getOrCreateFolder_(String(customerId), folder);
 
   const contentType = _detectMimeFromBase64_(base64Data) || "image/jpeg";
   const bytes = Utilities.base64Decode(String(base64Data).split(",")[1]);
