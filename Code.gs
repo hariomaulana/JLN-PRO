@@ -1,6 +1,6 @@
 /**
- * JLN PRO - POLA A (React 1 halaman)
- * File: Index.html, Partials_Head.html, Partials_Navbar.html, Modals.html, AppCore.html
+ * JLN PRO - POLA A (React SPA)
+ * Files: Index.html, Partials_Head.html, Partials_Navbar.html, Modals.html, AppCore.html
  */
 
 const CONFIG = {
@@ -11,20 +11,17 @@ const CONFIG = {
     USERS: "Users",
     LOCATIONS: "Locations",
     REPORTS: "Reports",
-    ANNOUNCEMENTS: "Announcements"
-  }
+    ANNOUNCEMENTS: "Announcements",
+  },
 };
 
-/* =========================
-   ROUTER
-========================= */
 function doGet(e) {
   const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : "customers";
 
   const t = HtmlService.createTemplateFromFile("Index");
   t.page = page;
 
-  // FIX penting: Native sandbox agar inline script + Babel jalan
+  // Native sandbox biar inline script + Babel aman
   return t.evaluate()
     .setTitle("JLN PRO - Management System")
     .setSandboxMode(HtmlService.SandboxMode.NATIVE)
@@ -32,9 +29,6 @@ function doGet(e) {
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
-/* =========================
-   INCLUDE HELPERS
-========================= */
 function includeT(filename) {
   return HtmlService.createTemplateFromFile(filename).evaluate().getContent();
 }
@@ -68,8 +62,8 @@ function loginUser(username, password) {
         user: {
           username: u,
           role: String(row[iRole] || "SALES").toUpperCase(),
-          fullName: String(row[iName] || "")
-        }
+          fullName: String(row[iName] || ""),
+        },
       };
     }
   }
@@ -77,9 +71,8 @@ function loginUser(username, password) {
 }
 
 function loginWithGoogle() {
-  // OPTIONAL: kalau mau pakai email google => mapping di sheet Users kolom EMAIL_GOOGLE
   const email = Session.getActiveUser().getEmail();
-  if (!email) return { ok: false, message: "Tidak bisa mengambil email Google (pastikan domain/izin)." };
+  if (!email) return { ok: false, message: "Tidak bisa mengambil email Google (izin/domain)." };
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName(CONFIG.SHEETS.USERS);
@@ -96,14 +89,14 @@ function loginWithGoogle() {
 
   for (let r = 0; r < values.length; r++) {
     const row = values[r];
-    if (String(row[iEmail]).trim().toLowerCase() === String(email).trim().toLowerCase()) {
+    if (String(row[iEmail] || "").trim().toLowerCase() === String(email).trim().toLowerCase()) {
       return {
         ok: true,
         user: {
           username: String(row[iUser] || email),
           role: String(row[iRole] || "SALES").toUpperCase(),
-          fullName: String(row[iName] || "")
-        }
+          fullName: String(row[iName] || ""),
+        },
       };
     }
   }
@@ -111,7 +104,7 @@ function loginWithGoogle() {
 }
 
 /* =========================
-   DATA HELPERS
+   DATA
 ========================= */
 function _sheet_(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -129,16 +122,13 @@ function _getAll_(sheetName) {
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
     const obj = {};
-    header.forEach((h, idx) => obj[h] = row[idx]);
-    obj.ROW_INDEX = i + 2; // baris sheet (mulai 2)
+    header.forEach((h, idx) => (obj[h] = row[idx]));
+    obj.ROW_INDEX = i + 2;
     out.push(obj);
   }
   return out;
 }
 
-/* =========================
-   GLOBAL DATA (dashboard)
-========================= */
 function getGlobalData(role, username) {
   const r = String(role || "").toUpperCase();
   const isAdmin = r === "ADMIN";
@@ -157,21 +147,15 @@ function getGlobalData(role, username) {
   return { customers, packages, locations, users, reports, announcements };
 }
 
-/* =========================
-   SAVE / DELETE GENERIC
-========================= */
 function saveData(sheetName, dataObj, rowIndex) {
   const sh = _sheet_(sheetName);
   const values = sh.getDataRange().getValues();
   const header = values[0].map(h => String(h).trim());
+  const row = header.map(h => (dataObj[h] !== undefined ? dataObj[h] : ""));
 
-  const row = header.map(h => dataObj[h] !== undefined ? dataObj[h] : "");
+  if (rowIndex) sh.getRange(Number(rowIndex), 1, 1, header.length).setValues([row]);
+  else sh.appendRow(row);
 
-  if (rowIndex) {
-    sh.getRange(Number(rowIndex), 1, 1, header.length).setValues([row]);
-  } else {
-    sh.appendRow(row);
-  }
   return true;
 }
 
@@ -182,13 +166,12 @@ function deleteRow(sheetName, rowIndex) {
 }
 
 /* =========================
-   REPORTS (Lock editing after verified)
+   REPORTS (sales bisa edit sebelum verified)
 ========================= */
 function saveReport(formData, rowIndex, role, username) {
   const r = String(role || "").toUpperCase();
   const isAdmin = r === "ADMIN";
 
-  // Kalau edit report oleh sales, pastikan belum verified
   if (rowIndex && !isAdmin) {
     const sh = _sheet_(CONFIG.SHEETS.REPORTS);
     const values = sh.getDataRange().getValues();
@@ -202,14 +185,11 @@ function saveReport(formData, rowIndex, role, username) {
     if (row && String(row[iSales] || "") !== String(username || "")) throw new Error("Tidak boleh mengedit laporan sales lain.");
   }
 
-  // Save via generic
   return saveData(CONFIG.SHEETS.REPORTS, formData, rowIndex);
 }
 
-function deleteReport(rowIndex, role, username) {
-  const r = String(role || "").toUpperCase();
-  const isAdmin = r === "ADMIN";
-  if (!isAdmin) throw new Error("Hanya ADMIN yang boleh hapus laporan.");
+function deleteReport(rowIndex, role) {
+  if (String(role || "").toUpperCase() !== "ADMIN") throw new Error("Hanya ADMIN yang boleh hapus laporan.");
   return deleteRow(CONFIG.SHEETS.REPORTS, rowIndex);
 }
 
@@ -221,7 +201,6 @@ function verifyReport(rowIndex, adminUsername) {
 
   const iVerifiedBy = idx("VERIFIED_BY");
   const iVerifiedAt = idx("VERIFIED_AT");
-
   if (iVerifiedBy < 0 || iVerifiedAt < 0) throw new Error("Kolom VERIFIED_BY / VERIFIED_AT tidak ada di sheet Reports.");
 
   const now = new Date();
@@ -238,7 +217,7 @@ function uploadFileToDrive(base64Data, filename, customerId, docType) {
   const sub = _getOrCreateFolder_(customerId, folder);
 
   const contentType = _detectMimeFromBase64_(base64Data) || "image/jpeg";
-  const bytes = Utilities.base64Decode(base64Data.split(",")[1]);
+  const bytes = Utilities.base64Decode(String(base64Data).split(",")[1]);
   const blob = Utilities.newBlob(bytes, contentType, `${docType}_${filename}`);
 
   const file = sub.createFile(blob);
@@ -249,11 +228,11 @@ function uploadFileToDrive(base64Data, filename, customerId, docType) {
 function _getOrCreateFolder_(name, parent) {
   const it = (parent ? parent.getFoldersByName(name) : DriveApp.getFoldersByName(name));
   if (it.hasNext()) return it.next();
-  return (parent ? parent.createFolder(name) : DriveApp.createFolder(name));
+  return parent ? parent.createFolder(name) : DriveApp.createFolder(name);
 }
 
 function _detectMimeFromBase64_(b64) {
-  const head = String(b64 || "").slice(0, 50);
+  const head = String(b64 || "").slice(0, 60);
   if (head.includes("data:image/png")) return "image/png";
   if (head.includes("data:image/jpeg")) return "image/jpeg";
   if (head.includes("data:image/jpg")) return "image/jpeg";
